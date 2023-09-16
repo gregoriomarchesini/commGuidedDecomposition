@@ -2,7 +2,7 @@ import numpy as np
 import casadi as ca
 import itertools
 from   typing import Self
-from   predicate_builder_module import *
+from   multiagent_STLdec.predicate_builder_module import *
 import networkx as nx 
 import matplotlib.pyplot as plt 
 
@@ -940,7 +940,7 @@ def visualizeGraphs(communicationGraph:nx.Graph, initialTaskGraph:nx.Graph, fina
 
 if __name__== "__main__" :
     # here we run some tests 
-    import predicate_builder_module as predmod
+    import multiagent_STLdec.predicate_builder_module as predmod
      
     # intersecting formulas should give a true
     formula1 = STLformula(stateSpaceDimension=2,temporalOperator="always",timeinterval=timeInterval(10,14))

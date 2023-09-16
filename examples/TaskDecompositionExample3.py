@@ -2,7 +2,7 @@ import numpy as np
 import casadi as ca
 import matplotlib.pyplot as plt
 import networkx as nx
-from   decomposition_module import *
+from   multiagent_STLdec.decomposition_module import *
 from   matplotlib.patches import Rectangle
 
 # define optimization problem 
@@ -45,11 +45,11 @@ edges = [(0,2,{"edgeObj":GraphEdge(source=0,target=2,isCommunicating = 1)}),
          (4,6,{"edgeObj":GraphEdge(source=4,target=6,isCommunicating = 1)}),
          (1,3,{"edgeObj":GraphEdge(source=1,target=3,isCommunicating = 1)}),
          (3,5,{"edgeObj":GraphEdge(source=3,target=5,isCommunicating = 1)}),
-         (2,3,{"edgeObj":GraphEdge(source=2,target=3,isCommunicating = 0)}),
+         (2,3,{"edgeObj":GraphEdge(source=2,target=3,isCommunicating = 1)}),
          (4,5,{"edgeObj":GraphEdge(source=4,target=5,isCommunicating = 1)}),
          (5,7,{"edgeObj":GraphEdge(source=5,target=7,isCommunicating = 1)}),
-         (1,7,{"edgeObj":GraphEdge(source=1,target=7,isCommunicating = 1)}),
-         (6,0,{"edgeObj":GraphEdge(source=6,target=0,isCommunicating = 1)}),]
+         (1,7,{"edgeObj":GraphEdge(source=1,target=7,isCommunicating = 0)}),
+         (6,0,{"edgeObj":GraphEdge(source=6,target=0,isCommunicating = 0)}),]
 
 # create the whole graph for your system with task and communication edges
 MASgraph = nx.Graph()
@@ -64,45 +64,37 @@ MASgraph.add_edges_from(edges)
 ## predicates for communicating agents
 # set isotropic distance predicate between agent 23 and 45
 radius    = 20
-predicate23 = ellipsoidPredicate(np.eye(problemDimension)/radius**2,np.zeros((problemDimension,1)))
-predicate45 = ellipsoidPredicate(np.eye(problemDimension)/radius**2,np.zeros((problemDimension,1)))
+predicate17 = ellipsoidPredicate(np.eye(problemDimension)/radius**2,center=v7-v1)
+predicate60 = ellipsoidPredicate(np.eye(problemDimension)/radius**2,center=v6-v0)
 
 
-
-#TODO: The cycle constraints hgave to be checked before the overloading constraints. This is because during 
-# the cycle constraint definition you will have to change some predicates if necessary to close the cycle
-
-formula23   = STLformula(temporalOperator    = "always",
-                         predicate           = predicate23,
+formula17   = STLformula(temporalOperator    = "always",
+                         predicate           = predicate17,
                          timeinterval        = timeInterval(0,10))
 
-formula45   = STLformula(temporalOperator    = "always",
-                         predicate           = predicate45,
+formula60   = STLformula(temporalOperator    = "always",
+                         predicate           = predicate60,
                          timeinterval        = timeInterval(0,10))
 
-MASgraph.edges[2,3]["edgeObj"].addFormula(formula23)
-MASgraph.edges[4,5]["edgeObj"].addFormula(formula45)
+MASgraph.edges[1,7]["edgeObj"].addFormula(formula17)
+MASgraph.edges[6,0]["edgeObj"].addFormula(formula60)
 
 
 ## predicates for non-communicating agents
 
-P28,B28 = computeEllipseMatrix(semiMajorAxis=8,semiMinorAxis=6,theta= 30*np.pi/180)
-P17,B28 = computeEllipseMatrix(semiMajorAxis=8,semiMinorAxis=6,theta=-30*np.pi/180)
 
-formula60   = STLformula(temporalOperator    = "always",
-                         predicate           = ellipsoidPredicate(P17,v6-v0),
+
+formula23   = STLformula(temporalOperator    = "always",
+                         predicate           = maxDistancePredicate(stateSpaceDimension=problemDimension,maxDistance=20),
                          timeinterval        = timeInterval(0,10))
 
-formula71   = STLformula(temporalOperator    = "always",
-                         predicate           = ellipsoidPredicate(P28,v7-v1),
+formula45   = STLformula(temporalOperator    = "always",
+                         predicate           = maxDistancePredicate(stateSpaceDimension=problemDimension,maxDistance=20),
                          timeinterval        = timeInterval(0,10),)
 
-formula71eventually  = STLformula(temporalOperator   = "eventually",
-                                 predicate           = ellipsoidPredicate(P28,v7*2-v1),
-                                 timeinterval        = timeInterval(0,10))
 
-MASgraph.edges[6,0]["edgeObj"].addFormula(formula60)
-MASgraph.edges[7,1]["edgeObj"].addFormula([formula71,formula71eventually])
+MASgraph.edges[2,3]["edgeObj"].addFormula(formula23)
+MASgraph.edges[4,5]["edgeObj"].addFormula(formula45)
 
 
 

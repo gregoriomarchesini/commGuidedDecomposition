@@ -1,23 +1,30 @@
-# Communication-guided decomposition of Signal Temporal Logic Tasks thourgh Convex optimization :robot:
-
 <div align="center">
 
-# zoxide
+# Communication-guided decomposition of Signal Temporal Logic Tasks thourgh Convex optimization :robot:
 
-[![crates.io][crates.io-badge]][crates.io]
-[![Downloads][downloads-badge]][releases]
-[![Built with Nix][builtwithnix-badge]][builtwithnix]
+![Static Badge](https://img.shields.io/badge/KTH-DCS-green?logo=gitlab?style=plastic)
+![Static Badge](https://img.shields.io/badge/love-STL-green?style=plastic)
 
-zoxide is a **smarter cd command**, inspired by z and autojump.
 
-It remembers which directories you use most frequently, so you can "jump" to
-them in just a few keystrokes.<br />
-zoxide works on all major shells.
 
-[Getting started](#getting-started) •
-[Installation](#installation) •
-[Configuration](#configuration) •
-[Integrations](#third-party-integrations)
-
+Unveail the potential of multi-agent systems under communication and Spatio-Temporal constraints  
 </div>
+
+---
+
+# Intro 
+
+The following repository contains code for convex decompostion of Signal Temporal Logic tasks defined of the relative position of of the agents ina multi-agent system. The code is divided into three main modules
+
+1. `decomposition_module`
+2. `predicate_builder_module`
+3. `control_module`
+
+Each module is suitably designed to provide effort less decompositon of complex formation specifications given to the MAS system with specified timing constraints.
+
+
+# Decomposition
+
+
+
 

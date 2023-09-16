@@ -12,33 +12,33 @@ source traget pair 4 1
 entering all parameteric case
 source traget pair 1 2
 source traget pair 5 3
-parent formulas ID : 139762287041040
-child  formulas ID : 139762287102032
+parent formulas ID : 140646313228368
+child  formulas ID : 140646319563728
 entering all parameteric case
-parent formulas ID : 139762287102032
-child  formulas ID : 139762286976208
+parent formulas ID : 140646319563728
+child  formulas ID : 140646312219984
 entering all parameteric case
-parent formulas ID : 139762286976208
-child  formulas ID : 139762286992080
+parent formulas ID : 140646312219984
+child  formulas ID : 140646312262224
 entering all parameteric case
 we set all the inclusions
 source traget pair 3 4
-parent formulas ID : 139762287039056
-child  formulas ID : 139762286986192
+parent formulas ID : 140646312186512
+child  formulas ID : 140646312234704
 entering all parameteric case
-parent formulas ID : 139762286986192
-child  formulas ID : 139762288527248
+parent formulas ID : 140646312234704
+child  formulas ID : 140646312179152
 entering all parameteric case
 we set all the inclusions
 source traget pair 5 6
-parent formulas ID : 139762288105744
-child  formulas ID : 139762288575056
+parent formulas ID : 140646312203408
+child  formulas ID : 140646312219600
 entering all parameteric case
-parent formulas ID : 139762288575056
-child  formulas ID : 139762286989584
+parent formulas ID : 140646312219600
+child  formulas ID : 140646312138000
 entering all parameteric case
-parent formulas ID : 139762286989584
-child  formulas ID : 139762296787472
+parent formulas ID : 140646312138000
+child  formulas ID : 140646312117712
 entering all parameteric case
 we set all the inclusions
 
@@ -156,16 +156,16 @@ Number of inequality constraint evaluations          = 79
 Number of equality constraint Jacobian evaluations   = 0
 Number of inequality constraint Jacobian evaluations = 66
 Number of Lagrangian Hessian evaluations             = 65
-Total seconds in IPOPT                               = 0.119
+Total seconds in IPOPT                               = 0.117
 
 EXIT: Optimal Solution Found.
       solver  :   t_proc      (avg)   t_wall      (avg)    n_eval
-       nlp_f  | 257.00us (  3.25us)  54.99us (696.06ns)        79
-       nlp_g  |  14.03ms (177.56us)   3.19ms ( 40.38us)        79
-  nlp_grad_f  | 270.00us (  4.03us)  61.78us (922.06ns)        67
-  nlp_hess_l  |  21.37ms (328.83us)   5.71ms ( 87.87us)        65
-   nlp_jac_g  |  46.60ms (695.48us)  12.47ms (186.06us)        67
-       total  | 462.15ms (462.15ms) 119.19ms (119.19ms)         1
+       nlp_f  | 284.00us (  3.59us)  47.30us (598.68ns)        79
+       nlp_g  |  13.15ms (166.44us)   2.63ms ( 33.34us)        79
+  nlp_grad_f  | 288.00us (  4.30us)  56.29us (840.10ns)        67
+  nlp_hess_l  |  21.98ms (338.12us)   4.99ms ( 76.71us)        65
+   nlp_jac_g  |  53.83ms (803.40us)  11.87ms (177.15us)        67
+       total  | 572.83ms (572.83ms) 117.63ms (117.63ms)         1
 
 -----------------------------------------
 Internal Report
@@ -175,56 +175,56 @@ Total number of formulas created : 14
 edge      : (1,4)
 vector    : [0.27235367 1.14997523]
 dimension : [0.35300594 0.35273518]
-formua ID :139762287011984
+formua ID :140646312120848
 edge      : (1,4)
 vector    : [0.2731086  1.15358692]
 dimension : [0.09854759 0.09870232]
-formua ID :139762292034896
+formua ID :140646324969424
 edge      : (1,2)
 vector    : [-0.00162769 -0.01531332]
 dimension : [0.30186105 0.29928718]
-formua ID :139762287093520
+formua ID :140646312221392
 edge      : (3,5)
 vector    : [ 0.0189431  -4.79389643]
 dimension : [0.90160282 0.88246378]
-formua ID :139762287041040
+formua ID :140646313228368
 edge      : (3,5)
 vector    : [ 0.01980209 -4.79052727]
 dimension : [0.73527011 0.71748931]
-formua ID :139762287102032
+formua ID :140646319563728
 edge      : (3,5)
 vector    : [ 0.02095356 -4.78594575]
 dimension : [0.54066425 0.52481491]
-formua ID :139762286976208
+formua ID :140646312219984
 edge      : (3,5)
 vector    : [ 0.02686326 -4.75623304]
 dimension : [0.17597193 0.16454065]
-formua ID :139762286992080
+formua ID :140646312262224
 edge      : (3,4)
 vector    : [-0.32043628 -1.77710682]
 dimension : [0.6324463  0.65168755]
-formua ID :139762287039056
+formua ID :140646312186512
 edge      : (3,4)
 vector    : [-0.31966716 -1.77288074]
 dimension : [0.45283644 0.46890356]
-formua ID :139762286986192
+formua ID :140646312234704
 edge      : (3,4)
 vector    : [-0.31872364 -1.76330742]
 dimension : [0.14575599 0.15129482]
-formua ID :139762288527248
+formua ID :140646312179152
 edge      : (5,6)
 vector    : [-10.0298185  -10.42369715]
 dimension : [0.85556704 0.88429897]
-formua ID :139762288105744
+formua ID :140646312203408
 edge      : (5,6)
 vector    : [-10.0291179  -10.42565597]
 dimension : [0.69076347 0.71847793]
-formua ID :139762288575056
+formua ID :140646312219600
 edge      : (5,6)
 vector    : [-10.02974043 -10.42927396]
 dimension : [0.49963895 0.52721374]
-formua ID :139762286989584
+formua ID :140646312138000
 edge      : (5,6)
 vector    : [-10.03919997 -10.46352546]
 dimension : [0.16940221 0.16782135]
-formua ID :139762296787472
+formua ID :140646312117712

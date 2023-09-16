@@ -2,7 +2,7 @@ import numpy as np
 import casadi as ca
 import matplotlib.pyplot as plt
 import networkx as nx
-from   decomposition_module import *
+from   multiagent_STLdec.decomposition_module import *
 from   matplotlib.patches import Rectangle
 import itertools
 

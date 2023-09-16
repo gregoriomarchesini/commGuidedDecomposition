@@ -1,5 +1,5 @@
-from decomposition_module import *
-from predicate_builder_module import *
+from multiagent_STLdec.decomposition_module import *
+from multiagent_STLdec.predicate_builder_module import *
 import casadi as ca
 
 

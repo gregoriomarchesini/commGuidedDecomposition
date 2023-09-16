@@ -1,9 +1,15 @@
 import numpy as np
 import casadi as ca
 import networkx as nx
-from   decomposition_module import *
-from  predicate_builder_module import *
-from control_module import *
+from   multiagent_STLdec.decomposition_module import *
+from  multiagent_STLdec.predicate_builder_module import *
+from multiagent_STLdec.control_module import *
+import sys
+
+orig_stdout = sys.stdout
+f = open('out.txt', 'w')
+sys.stdout = f
+
 
 # define optimization problem 
 
@@ -12,10 +18,17 @@ from control_module import *
 #########################################################################################################
 # create a set of node positions 
 
-v1 = np.array([10.,0.])
-v2 = np.array([ 0.,10.])
-v3 = np.array([-10.,0.])
+v1 = np.array([-0.,-4.])
+v2 = np.array([ 4.,-0.])
+v3 = np.array([-0.,4.])
+v4 = np.array([ -4.,0.])
+v5 = np.array([2.,10.])
+v6 = np.array([ 20.,10.])
 
+centerDiamond        = ((v1+v2+v3+v4)-v6)/4 
+v6toDiamondDirection = centerDiamond-v6
+v6toDiamondDirection = v6toDiamondDirection/np.linalg.norm(v6toDiamondDirection)
+midPointOfSeparation = centerDiamond-v6/2
 
 
 # select maximum communication distance
@@ -28,11 +41,20 @@ maxDistanceFunction = distPred.function
 
 nodes =[(1,{"pos":v1}),
         (2,{"pos":v2}),
-        (3,{"pos":v3})]
+        (3,{"pos":v3}),
+        (4,{"pos":v4}),
+        (5,{"pos":v5}),
+        (6,{"pos":v6})]
 
-edges = [(1,2,{"edgeObj":GraphEdge(source=1,target=2,isCommunicating = 1)}),
-         (2,3,{"edgeObj":GraphEdge(source=2,target=3,isCommunicating = 1)}),
-         (3,1,{"edgeObj":GraphEdge(source=3,target=1,isCommunicating = 0)})]
+edges = [(5,6,{"edgeObj":GraphEdge(source=5,target=6,isCommunicating = 1)}),
+         (5,3,{"edgeObj":GraphEdge(source=5,target=3,isCommunicating = 1)}),
+         (3,4,{"edgeObj":GraphEdge(source=3,target=4,isCommunicating = 1)}),
+         (4,1,{"edgeObj":GraphEdge(source=4,target=1,isCommunicating = 1)}),
+         (1,2,{"edgeObj":GraphEdge(source=1,target=2,isCommunicating = 1)}),
+         (6,3,{"edgeObj":GraphEdge(source=6,target=3,isCommunicating = 0)}),
+         (6,2,{"edgeObj":GraphEdge(source=6,target=2,isCommunicating = 0)}),
+         (6,1,{"edgeObj":GraphEdge(source=6,target=1,isCommunicating = 0)}),
+         (6,4,{"edgeObj":GraphEdge(source=6,target=4,isCommunicating = 0)}),]
 
 xx = [node[1]["pos"][0] for node in nodes]
 yy = [node[1]["pos"][1] for node in nodes]
@@ -50,20 +72,29 @@ MASgraph.add_edges_from(edges)
 #########################################################################################################
 
 
+edgesToTheDiamond = [(6,1),(6,2),(6,3),(6,4)]
 
-formula   = STLformula(temporalOperator      = "always",
-                           predicate          = ellipsoidPredicate(center=np.array([-10,-4]),P = np.eye(2)/4),
+
+
+for i,j in edgesToTheDiamond :
+    # formula   = STLformula(temporalOperator   = "always",
+    #                        predicate          = polytopicSetPredicate(center=midPointOfSeparation,a_list=[-4*v6toDiamondDirection],distances=[0]),
+    #                        timeinterval       = timeInterval(20.,40.))
+    
+    formula   = STLformula(temporalOperator   = "always",
+                           predicate          = ellipsoidPredicate(center=np.array([-10,-5]),P = np.eye(2)/4),
                            timeinterval       = timeInterval(20.,40.))
-MASgraph.edges[1,3]["edgeObj"].addFormula(formula)
    
-formula   = STLformula(temporalOperator       = "always",
-                           predicate          = ellipsoidPredicate(center=np.array([-3,5]),P = np.eye(2)/2),
-                           timeinterval       = timeInterval(20.,40.))
-MASgraph.edges[2,1]["edgeObj"].addFormula(formula)
-   
+    
+    MASgraph.edges[i,j]["edgeObj"].addFormula(formula)
+
+
+
 initialTaskGraph,finalTaskGraph,commGraph  = computeNewTaskGraph(MASgraph=MASgraph,problemDimension=2,maxDistanceFunction=maxDistanceFunction)
 visualizeGraphs(commGraph, initialTaskGraph, finalTaskGraph)
 
+sys.stdout = orig_stdout
+f.close()
 
 agents            :dict[int,Agent]= {} # Agents obj
 agentsState       :dict[int,np.ndarray]= {} # save the current agents states
@@ -73,7 +104,7 @@ agentsTrajectory  :dict[int,list[np.ndarray]]= {}
 for index,posDict in nodes :
     neigbours = list(finalTaskGraph.neighbors(index))
     ss = np.shape((posDict["pos"]))
-    initialAgentState = posDict["pos"] 
+    initialAgentState = posDict["pos"] + np.random.rand(*ss)*40
     agentsState[index] = initialAgentState 
     agentsTrajectory[index] = [initialAgentState ]
     
@@ -97,7 +128,7 @@ for agentId,agent in agents.items() :
         neigboursState[index] = agentsState[index]
     print(f"agentID : {agentId}")
     print(f"number of constraints : {len(formulasForAgent[agentId])}")
-    agent.initializeController(formulas = formulasForAgent[agentId],initialNeigboursState=neigboursState)
+    agent.initializeController(formulas = formulasForAgent[agentId],initialNeigboursState=neigboursState,allowSlackSatisfaction=True)
     
 counter = 0
 timeRange = np.arange(0,40,agents[1].timeStep)
@@ -123,6 +154,7 @@ for t in timeRange :
     counter +=1
 
 fig,ax = plt.subplots()
+ax.grid(visible=True)
 
 for agentId,trajectory in agentsTrajectory.items() :
     x = []
@@ -132,17 +164,13 @@ for agentId,trajectory in agentsTrajectory.items() :
         x.append(np.squeeze(state[0]))
         y.append(np.squeeze(state[1]))
     
-    if agentId ==1 :
-        ax.plot(x,y,c="red")
-        ax.scatter(x[0],y[0],c="red")
-        ax.scatter(x[-1],y[-1],marker="+",c="k")
-    else :
-        ax.plot(x,y,c="blue")
-        ax.scatter(x[0],y[0],c="blue")
-        ax.scatter(x[-1],y[-1],marker="+",c="k")
     
-    ax.annotate(xy=(x[0]+0.1,y[0]+0.1),text=f"agent {agentId}")
-ax.grid(visible=True)       
+    ax.plot(x,y,c="red")
+    ax.scatter(x[0::int(20/100*maxIt)],y[0::int(20/100*maxIt)],marker=">",c="red")
+    ax.scatter(x[0],y[0],c="red")
+    ax.scatter(x[-1],y[-1],c="k",marker="+")
+    ax.annotate(xy=(x[0]+0.2,y[0]+0.2),text=f"agent {agentId}")
+           
 plt.show()
     
     
