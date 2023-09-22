@@ -8,7 +8,7 @@
             "name": "Python: Module",
             "type": "python",
             "request": "launch",
-            "module": "examples.TaskDecompositionExample2",
+            "module": "examples.paperSimulationFormation2",
             "justMyCode": true,
             "env": {"PYTHONPATH": "${workspaceFolder}/multiagent_STLdec/"}
         }

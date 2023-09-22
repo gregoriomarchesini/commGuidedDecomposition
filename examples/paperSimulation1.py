@@ -2,12 +2,9 @@ import numpy as np
 import casadi as ca
 import matplotlib.pyplot as plt
 import networkx as nx
-import multiagent_STLdec
 from   multiagent_STLdec.decomposition_module import *
-from   matplotlib.patches import Rectangle
 
 # define optimization problem 
-
 
 
 #########################################################################################################

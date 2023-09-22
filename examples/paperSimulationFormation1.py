@@ -4,12 +4,13 @@ import networkx as nx
 from   multiagent_STLdec.decomposition_module import *
 from  multiagent_STLdec.predicate_builder_module import *
 from multiagent_STLdec.control_module import *
+from multiagent_STLdec.visualization_module import simulateAgents
 import sys
 
-orig_stdout = sys.stdout
-f = open('out.txt', 'w')
-sys.stdout = f
 
+orig_stdout = sys.stdout
+f = open('simulation1_decompositon.txt', 'w')
+sys.stdout = f
 
 # define optimization problem 
 
@@ -46,7 +47,7 @@ nodes =[(1,{"pos":v1}),
         (5,{"pos":v5}),
         (6,{"pos":v6})]
 
-edges = [(5,6,{"edgeObj":GraphEdge(source=5,target=6,isCommunicating = 1)}),
+edges = [(5,6,{"edgeObj":GraphEdge(source=6,target=5,isCommunicating = 1)}),
          (5,3,{"edgeObj":GraphEdge(source=5,target=3,isCommunicating = 1)}),
          (3,4,{"edgeObj":GraphEdge(source=3,target=4,isCommunicating = 1)}),
          (4,1,{"edgeObj":GraphEdge(source=4,target=1,isCommunicating = 1)}),
@@ -82,7 +83,7 @@ for i,j in edgesToTheDiamond :
     #                        timeinterval       = timeInterval(20.,40.))
     
     formula   = STLformula(temporalOperator   = "always",
-                           predicate          = ellipsoidPredicate(center=np.array([-10,-5]),P = np.eye(2)/4),
+                           predicate          = ellipsoidPredicate(center=np.array([-40,0]),P = np.eye(2)/6),
                            timeinterval       = timeInterval(20.,40.))
    
     
@@ -92,85 +93,19 @@ for i,j in edgesToTheDiamond :
 
 initialTaskGraph,finalTaskGraph,commGraph  = computeNewTaskGraph(MASgraph=MASgraph,problemDimension=2,maxDistanceFunction=maxDistanceFunction)
 visualizeGraphs(commGraph, initialTaskGraph, finalTaskGraph)
-
 sys.stdout = orig_stdout
 f.close()
 
-agents            :dict[int,Agent]= {} # Agents obj
-agentsState       :dict[int,np.ndarray]= {} # save the current agents states
-agentsTrajectory  :dict[int,list[np.ndarray]]= {}
 
-# time to create a very cool simulation 
-for index,posDict in nodes :
-    neigbours = list(finalTaskGraph.neighbors(index))
-    ss = np.shape((posDict["pos"]))
-    initialAgentState = posDict["pos"] + np.random.rand(*ss)*40
-    agentsState[index] = initialAgentState 
-    agentsTrajectory[index] = [initialAgentState ]
-    
-    agents[index] = Agent(initialState= initialAgentState  ,agentIndex=index,neigbours=neigbours)
-    
-formulasForAgent = {index: [] for index,data in nodes}
-for source,target,dataObj in finalTaskGraph.edges(data=True) :
-    edgeObj :GraphEdge = dataObj["edgeObj"]
-    if isinstance(edgeObj.formulasList,list) :
-        formulasForAgent[source] += edgeObj.formulasList
-        formulasForAgent[target] += edgeObj.formulasList
-    else :
-        formulasForAgent[source] += [edgeObj.formulasList]
-        formulasForAgent[target] += [edgeObj.formulasList]
+initialAgentsState ={1:np.array([0,0]),
+                     2:np.array([-30,-60]),
+                     3:np.array([10,11]),
+                     4:np.array([-15,-30]),
+                     5:np.array([-10,-40]),
+                     6:np.array([15,-15])}
 
-# initialise
-for agentId,agent in agents.items() :
-    # here target source is just a name. Doesn't mean that the edge has this direction. The direction of the edge is found later on inside the code
-    neigboursState = {}
-    for index in agents[agentId].neigbours :
-        neigboursState[index] = agentsState[index]
-    print(f"agentID : {agentId}")
-    print(f"number of constraints : {len(formulasForAgent[agentId])}")
-    agent.initializeController(formulas = formulasForAgent[agentId],initialNeigboursState=neigboursState,allowSlackSatisfaction=True)
-    
-counter = 0
-timeRange = np.arange(0,40,agents[1].timeStep)
-maxIt   = len(timeRange)
-for t in timeRange :
-    print(counter/maxIt)
+simulateAgents(finalTaskGraph,tEnd=40,tStart=0,initialAgentsState=initialAgentsState)
 
-    for agentIndex,agent in agents.items() :
-        # take a step
-        agentNextState          = agent.step(time=t)
-        agentsState[agentIndex] = agentNextState
-        agentsTrajectory[agentIndex].append(agentNextState)
-        
-        # agent.printCurrentConstraintValue()
-    
-    # now that all the states are updated we can the compute the next control input
-    for agentIndex,agent in agents.items() :
-        neigboursState = {}
-        for index in agents[agentIndex].neigbours :
-            neigboursState[index] = agentsState[index]
-            agent.updateNeighboursState(neigboursState = neigboursState)
-
-    counter +=1
-
-fig,ax = plt.subplots()
-ax.grid(visible=True)
-
-for agentId,trajectory in agentsTrajectory.items() :
-    x = []
-    y = []
-
-    for state in trajectory :
-        x.append(np.squeeze(state[0]))
-        y.append(np.squeeze(state[1]))
-    
-    
-    ax.plot(x,y,c="red")
-    ax.scatter(x[0::int(20/100*maxIt)],y[0::int(20/100*maxIt)],marker=">",c="red")
-    ax.scatter(x[0],y[0],c="red")
-    ax.scatter(x[-1],y[-1],c="k",marker="+")
-    ax.annotate(xy=(x[0]+0.2,y[0]+0.2),text=f"agent {agentId}")
-           
 plt.show()
     
     

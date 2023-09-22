@@ -1,0 +1,6 @@
+# ignore all .a files
+*.txt
+*.npy
+*.pdf
+*.svg
+

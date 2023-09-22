@@ -58,14 +58,14 @@ class convexPredicateFunction() :
                 self._etaVar    = ca.vertcat(self._centerVar,self._nuVar) # casadi.Opti.variable() [centerVar,nuVar] (just concatenation)
                 self._isParametric = 1
             
-        self._isApproximationAvailable     = False
+        self._isApproximated     = False
         self._optimalApproximationvertices = None
         self._optimalApproximationCenter   = None # center of the zero level set
         self._optimalApproximationNu       = None # nu vector of the cuboid containing the dimneioson of the cuboid
         
         if not self._isParametric and computeApproximation :
            self.computeBestCuboidApproximation()
-           self._isApproximationAvailable = True
+           self._isApproximated = True
         
     @property
     def function(self) :
@@ -154,17 +154,21 @@ class convexPredicateFunction() :
         self._optimalApproximationCenter   = opti.value(centerVarDummy) # center of the zero level set
         self._optimalApproximationNu       = opti.value(nuVarDummy) # nu vector of the cuboid containing the dimneioson of the cuboid
         
+        
+        if self._optimalApproximationCenter.ndim == 1:
+            self._optimalApproximationCenter = self._optimalApproximationCenter[:,np.newaxis]
+        if self._optimalApproximationNu.ndim == 1:
+            self._optimalApproximationNu = self._optimalApproximationNu[:,np.newaxis]
+            
         # NOTE : for the flipped predicate the center will be the negative of the center for the current function! So there is no need to compute the optimal hypercube underapproximation for the flipped predicate
         
-    def replaceWithApproximatePredicate(self) :
+    def computeCuboidApproximation(self) :
         """
         This function is called in case the original predicate needs to be replaced with an under approximation of it
         """
-        if not self._isApproximationAvailable : # if the approximation was not computed before at the creation of the instance then create it now
-            self.computeBestCuboidApproximation(self)
-            self._isApproximationAvailable = True
-        
-        self._function,self._functionFlipped = cuboidPredicate(center=self._optimalApproximationCenter ,dimensions=self._optimalApproximationNu)
+        if not self._isApproximated : # if the approximation was not computed before at the creation of the instance then create it now
+            self.computeBestCuboidApproximation()
+            self._isApproximated = True
         
     def flip(self):
         """
@@ -184,7 +188,7 @@ class convexPredicateFunction() :
         
         
         # flip the best approximation center (the vector nu is unchanged after flipping)
-        if self._isApproximationAvailable :
+        if self._isApproximated :
             self._optimalApproximationVertices = - self._optimalApproximationVertices
             self._optimalApproximationCenter   = - self._optimalApproximationCenter
         
@@ -218,29 +222,49 @@ class convexPredicateFunction() :
     
     def linearRepresentationHypercube(self,source:int,target:int) :
         """returns linear representation of the parameteric function as Ax<=b"""
-        
         if self.hasUndefinedDirection :
             raise NotImplementedError("predicate has undefined direction. Only if you define a target and source you can obtain the hypercube vertices")
-        if self.isParametric :
-            if (self.edgeTuple != (source,target)) and (self.edgeTuple != (target,source)) : # this happens if the edge is not the same at all
+        
+        if (self.edgeTuple != (source,target)) and (self.edgeTuple != (target,source)) : # this happens if the edge is not the same at all
                 raise NotImplementedError("the given source\\target pair dies not match the edge of the predicate")
+        
+        if self.isParametric : # parametric case
             
             # A(x-c) - b <= 0
-            elif self.edgeTuple == (source,target) :
+            if self.edgeTuple == (source,target) :
                 A  = np.vstack((np.eye(self.stateSpaceDimension),-np.eye(self.stateSpaceDimension)))  # (face normals x hypercube stateSpaceDimension)
                 Ac = A@self._centerVar
                 d  = ca.vertcat(self.nuVar/2,self.nuVar/2)
                 b  = Ac+d
                 return A,b
+                
             else :
                 A  = np.vstack((np.eye(self.stateSpaceDimension),-np.eye(self.stateSpaceDimension)))  # (face normals x hypercube stateSpaceDimension)
-                Ac = A@(-self._centerVar) # revert the center
+                Ac = A@(-self._centerVar)
                 d  = ca.vertcat(self.nuVar/2,self.nuVar/2)
                 b  = Ac+d
                 return A,b
-                
-        else : 
-            raise NotImplementedError("formula is not parametrichis method is aonly available for parameteric formulas")
+                         
+        else :
+            
+            if self._isApproximated :
+            
+                # A(x-c) - b <= 0
+                if self.edgeTuple == (source,target) :
+                    A  = np.vstack((np.eye(self.stateSpaceDimension),-np.eye(self.stateSpaceDimension)))  # (face normals x hypercube stateSpaceDimension)
+                    Ac = A@(self._optimalApproximationCenter)
+                    d  = ca.vertcat(self.optimalApproximationNu/2,self.optimalApproximationNu/2)
+                    b  = Ac+d
+                    return A,b
+                    
+                else :
+                    A  = np.vstack((np.eye(self.stateSpaceDimension),-np.eye(self.stateSpaceDimension)))  # (face normals x hypercube stateSpaceDimension)
+                    Ac = A@(-self._optimalApproximationCenter)
+                    d  = ca.vertcat(self.optimalApproximationNu/2,self.optimalApproximationNu/2)
+                    b  = Ac+d
+                    return A,b
+            else :
+                raise Exception("current formula is not paranetric and does not have an availble linear approximation. Please provide one by calling the appropriate method")
     
     def addSourceTarget(self,source:int,target:int) -> None:
         self._sourceNode = source
@@ -408,7 +432,7 @@ class timeInterval() :
             
 class STLformula( ) :
     
-    def __init__(self,temporalOperator:str,timeinterval:timeInterval,predicate:convexPredicateFunction):
+    def __init__(self,temporalOperator:str,timeinterval:timeInterval,predicate:convexPredicateFunction,timeOfSatisfaction:int=None):
         
         """ 
         Input
@@ -441,7 +465,23 @@ class STLformula( ) :
         if timeinterval.isEmpty() :
             raise NotImplementedError("Sorry, empty time intervals are not currently supported by this class")
         self._timeInterval  = timeinterval
-            
+        
+        if temporalOperator =="always":
+            self._timeOfSatisfaction = timeinterval.a
+            self._timeOfRemotion = timeinterval.b
+        else :
+            if timeOfSatisfaction == None :
+                raise ValueError(f"For eventually formulas you need to specify a time a satisfaction for the formula in the range of your time interval [{timeinterval.a},{timeinterval.b}]")
+            elif timeOfSatisfaction<timeinterval.a or timeOfSatisfaction>timeinterval.b :
+                raise ValueError(f"For eventually formulas you need to specify a time a satisfaction for the formula in the range of your time interval [{timeinterval.a},{timeinterval.b}]")
+            else :
+                self._timeOfSatisfaction = timeOfSatisfaction
+                self._timeOfRemotion     = timeOfSatisfaction
+    
+    
+
+    
+    
     
     """STL formula class"""
     
@@ -475,13 +515,22 @@ class STLformula( ) :
     
     @property
     def edgeTuple(self) :
-        return (self._predicate.sourceNode,self._predicate.targetNode)
+        return self._predicate.edgeTuple
     @property
     def sourceNode(self) :
         return self._predicate.sourceNode
     @property
     def targetNode(self):
         return self._predicate.targetNode
+    
+    @property
+    def timeOfSatisfaction(self):
+        return self._timeOfSatisfaction
+    
+    @property
+    def timeOfRemotion(self):
+        return self._timeOfRemotion
+        
         
     
     def flip(self) :
@@ -514,7 +563,6 @@ class STLformula( ) :
             # get the represenations of both formulas with the right verse of the edge
             vertices      = formula.getHypercubeVertices(sourceNode=source,targetNode=target)
             A,b           = self.computeLinearHypercubeRepresentation(sourceNode=source,targetNode=target)
-            print("entering all parameteric case")
             constraints = []
             for jj in range(numVertices) : # number of vertices of hypercube is computable given the stateSpaceDimension of the problem
                 constraints +=[ A@vertices[:,jj]-b<=np.zeros((self._stateSpaceDimension*2,1))]
@@ -527,12 +575,16 @@ class STLformula( ) :
                 raise NotImplementedError("It seems that you are trying to make an inclusion between two formulas that are not part of the same edge. This is not support for now")
             elif formula.edgeTuple != self.edgeTuple :
                 self.flip() # change to flipped version to match the direction of the parametric formulas
-                
             vertices   = formula.getHypercubeVertices(sourceNode=source,targetNode=target)
             constraints = []
-            for jj in range(numVertices) : # number of vertices of hypercube is computable given the stateSpaceDimension of the problem
-                constraints +=[ self._predicate.function(vertices[:,jj])<=0 ] 
-            
+            if self._predicate._isApproximated : # in this case the predicate was approximated so you can do all of this with linear hyperplanes 
+                A,b = self.computeLinearHypercubeRepresentation(sourceNode=source,targetNode=target)
+                for jj in range(numVertices) : # number of vertices of hypercube is computable given the stateSpaceDimension of the problem
+                    constraints +=[ A@vertices[:,jj] - b<=0 ] 
+            else :
+                for jj in range(numVertices) : # number of vertices of hypercube is computable given the stateSpaceDimension of the problem
+                    constraints +=[ self._predicate.function(vertices[:,jj])<=0 ] 
+                
         elif (not formula.isParametric) and self.isParametric :  
             raise NotImplementedError("Trying to include a non parameteric formula inside a parameteroc one. Not supported")
         
@@ -652,8 +704,8 @@ def ellipsoidPredicate(P: np.ndarray,center:np.ndarray) -> convexPredicateFuncti
     if center.ndim == 1 :
         center = center[:,np.newaxis] # put as column
     x = ca.SX.sym("x",n,1)
-    function         = ca.Function("predicate",[x],[(x-center).T@P@(x-center)-1])   # retun the predicate 
-    functionFlipped = ca.Function("predicate",[x],[(x-center).T@P@(x-center)-1])   # retun the predicate
+    function        = ca.Function("predicate",[x],[(x-center).T@P@(x-center)-1])   # retun the predicate . # in this case the vector e is the edge ij
+    functionFlipped = ca.Function("predicate",[x],[(x + center).T@P@(x + center)-1])   # retun the predicate . # in this case the vector x is the vector ji. No change of sign for x is needed since they are two different vectors in the two formulas
     return convexPredicateFunction(stateSpaceDimension=len(center),function=function,functionFlipped= functionFlipped,centerGuess= center) 
         
            
@@ -694,8 +746,8 @@ def polytopicSetPredicate(center : np.ndarray, a_list : list[np.ndarray],distanc
         if len(aVec) != len(center) :
             raise ValueError("seems that at least one direction vector has different dimensions than the corresponding center vector. Please fix this")
         
-        hyperplane        = (x-center).T@aVec[:,np.newaxis] - distance 
-        flippedHyperplane = (x+center).T@aVec[:,np.newaxis] - distance 
+        hyperplane        = (x-center).T@aVec[:,np.newaxis] - distance # in this case the vector e is the edge ij
+        flippedHyperplane = (x + center).T@aVec[:,np.newaxis] - distance # in this case the vector x is the vector ji. No change of sign for x is needed since they are two different vectors in the two formulas
         
         
         hyperplaneFun  = ca.Function("hyperplane",[x],[hyperplane]) # this defined an hyperplane function
