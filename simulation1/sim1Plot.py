@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-agentId = [1,2,3,4]
+agentId = [1,2,3,4,5]
 
 agentsTrajectory = dict()
 for id in agentId :
@@ -13,7 +13,9 @@ for id in agentId :
 rows,cols = np.shape(agentsTrajectory[1])
 time = agentsTrajectory[1][:,2]
 
-t25Index = np.argmin(np.abs(time-25))
+t24Index = np.argmin(np.abs(time-24))
+
+t20Index = np.argmin(np.abs(time-14))
 
 
 fig1,ax1 = plt.subplots()
@@ -28,18 +30,19 @@ ax[0].grid(visible=True)
 ax[1].grid(visible=True)
 step1   = 150
 
-color1 = np.array([1,0,1,0.8])
-color2 = np.array([0.5,0.5,0,0.8])
-color3 = np.array([0,1,1,0.8])
-color4 = np.array([1,0,0,0.8])
+color1 = np.array([1  ,0  ,1  ,0.8])
+color2 = np.array([0.5,0.5,0  ,0.8])
+color3 = np.array([0.3,0.5  ,0.5 ,0.8])
+color4 = np.array([1  ,0  ,0  ,0.8])
+color5 = np.array([0.4,0.5,0.2,0.8])
 
-colors = [color1,color2,color3,color4]
+colors = [color1,color2,color3,color4,color5]
 cmaps = dict()
    
 for agentId,trajectory in agentsTrajectory.items() :
 
-    x1 = trajectory[:t25Index,0]
-    y1 = trajectory[:t25Index,1]
+    x1 = trajectory[:t24Index,0]
+    y1 = trajectory[:t24Index,1]
 
     ax[0].scatter(x1[::step1],y1[::step1],color=colors[agentId-1],linewidths=2)
     ax[0].scatter(x1[0],y1[0],c="green", linewidths=3)
@@ -50,36 +53,37 @@ for agentId,trajectory in agentsTrajectory.items() :
 ax[0].set_xlabel("x-axis [m]")
 ax[0].set_ylabel("y-axis [m]")
 
-step2   = 1
+step2   = 30
 
 for agentId,trajectory in agentsTrajectory.items() :
 
-    x = trajectory[t25Index:,0]
-    y = trajectory[t25Index:,1]
+    x = trajectory[t24Index:,0]
+    y = trajectory[t24Index:,1]
     
-    x1 = trajectory[:t25Index,0]
-    y1 = trajectory[:t25Index,1]
+    x1 = trajectory[:t24Index,0]
+    y1 = trajectory[:t24Index,1]
     
 
     ax[1].scatter(x[::step2],y[::step2],color=colors[agentId-1],linewidths=2)
-    ax[1].scatter(x1[::step1],y1[::step1],color=colors[agentId-1],linewidths=2,alpha=0.2)
+    ax[1].scatter(x1[t20Index::step1],y1[t20Index::step1],color=colors[agentId-1],linewidths=2,alpha=0.2)
     
     ax[1].scatter(x[0],y[0],c="green", linewidths=3)
     ax[1].scatter(x[-1],y[-1],c="k",marker="x", linewidths=3)
-    ax[1].annotate(xy=(x[0]+0.6,y[0]+0.6),text=f"agent {agentId}")
+    ax[1].annotate(xy=(x[-1]-0.6,y[-1]+0.8),text=f"agent {agentId}")
     
 
 
 ax[1].set_xlabel("$x-axis [m]$")
 ax[1].set_ylabel("$y-axis [m]$")
 
-ax[0].set_xlim(-12.,9)
-ax[0].set_ylim(-17.,12)
+ax[0].set_xlim(-30.,20)
+ax[0].set_ylim(-30.,14)
 
-ax[1].set_xlim(-12.,9)
-ax[1].set_ylim(-17.,12)
+ax[1].set_xlim(-24,-14)
+ax[1].set_ylim(-10.,5)
 
-# fig1.savefig('plot11.pdf', format='pdf')
-# fig2.savefig('plot21.pdf', format='pdf')
+
+fig1.savefig('plot1.pdf', format='pdf')
+fig2.savefig('plot2.pdf', format='pdf')
 
 plt.show()

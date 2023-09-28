@@ -27,8 +27,6 @@ v4 = np.array([10,0])
 # select maximum communication distance
 maximumInterRobotDistance  = 100000                # not binding for now
 problemDimension           = len(v1)             # dimension of the problem in R^n
-distPred :convexPredicateFunction     = maxDistancePredicate(stateSpaceDimension=problemDimension,maxDistance=maximumInterRobotDistance) # here the target and source do not matter really
-maxDistanceFunction = distPred.function
 
 # create an iterable with index and attributes of the nodes you want to create
 
@@ -80,7 +78,7 @@ MASgraph.edges[1,2]["edgeObj"].addFormula(formula)
 
 
 formula   = STLformula(temporalOperator   = "eventually",
-                        predicate          = ellipsoidPredicate(center=np.array([10,10]),P = np.eye(2)/3),
+                        predicate          = ellipsoidPredicate(center=np.array([10,10]),P = np.eye(2)/9),
                         timeinterval       = timeInterval(30.,35.),
                         timeOfSatisfaction =35)
 
@@ -97,7 +95,7 @@ MASgraph.edges[4,3]["edgeObj"].addFormula(formula)
 
 
     
-initialTaskGraph,finalTaskGraph,commGraph  = computeNewTaskGraph(MASgraph=MASgraph,problemDimension=2,maxDistanceFunction=maxDistanceFunction)
+initialTaskGraph,finalTaskGraph,commGraph  = computeNewTaskGraph(MASgraph=MASgraph,problemDimension=2,maxInterRobotDistance= maximumInterRobotDistance)
 visualizeGraphs(commGraph, initialTaskGraph, finalTaskGraph)
 sys.stdout = orig_stdout
 f.close()
@@ -107,15 +105,15 @@ initialAgentsState ={1:np.array([-10,-15]),
                      3:np.array([0,10]),
                      4:np.array([5,-10])}
 
-stateTrajectories = simulateAgents(finalTaskGraph,tEnd=38,tStart=0,initialAgentsState=initialAgentsState,cleaningTimes=[26])
+stateTrajectories = simulateAgents(finalTaskGraph,tEnd=40,tStart=0,initialAgentsState=initialAgentsState,cleaningTimes=[26])
 
 try:
-    os.mkdir("./simulation1")
+    os.mkdir("./simulation2")
 except OSError as error:
     print(error) 
 
 for agentIndex,trajectory in stateTrajectories.items() :       
-        with open(f"simulation1/agent{agentIndex}.npy", 'wb') as f:
+        with open(f"simulation2/agent{agentIndex}.npy", 'wb') as f:
                 np.save(f,trajectory)
 
         

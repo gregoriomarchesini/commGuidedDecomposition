@@ -49,7 +49,7 @@ class STLController():
         self._neigboursStatePar       = {neigbour:self._opti.parameter(stateSpaceDim,1) for neigbour in self._neigbours}
         self._tPar                       = self._opti.parameter(1)
         self._counter = 0
-        self._epsilon = self._opti.variable(1)
+        self._epsilon = self._opti.variable(1) # list of slack variables 
         
         self._currentControlInput = np.zeros(self._stateSpaceDim)
         
@@ -169,7 +169,12 @@ class STLController():
         
         # we create now the time transient funciton
         # this time transient will lift our predicate so that we are positive at the beginning
-        scaleFactor =  1*(1+(timeSatisfaction-self._initializationTime)/10)   #1.4 # >=1 to give some margin but better not 1 otherwise you barrier will start from avalue of zero
+        # scaleFactor =  1*(1+(timeSatisfaction-self._initializationTime)/50)   # >=1 to give some margin but better not 1 otherwise you barrier will start from avalue of zero
+        
+        scaleFactor =  1*(1+(timeSatisfaction-self._initializationTime)/10)   # >=1 to give some margin but better not 1 otherwise you barrier will start from avalue of zero
+        
+        
+        
         
         if h0 <= 0 : # you are already inside the barrier so no need to create a gamma function 
             if timeSatisfaction==0 :
@@ -201,7 +206,7 @@ class STLController():
     
         # create an activation funcition for this constraints
         
-        activationFunction = ca.if_else(self._timeVar<=timeOfRemotion,1.,0.)
+        activationFunction = ca.if_else(self._timeVar<=timeOfRemotion*1.1,1.,0.)
         
         
         barrier  = ca.Function("barrierFunction",[self._agentStateVar,self._timeVar],[activationFunction*(predicateFunction(self._agentStateVar) + gamma)])
@@ -297,10 +302,10 @@ class STLController():
         if allowSlackSatisfaction :
             if not len(self._STLformulas)==0 :
                 self._opti.set_initial(self._epsilon,0)
-                for constraint in self._barrierConstraints :
+                self._opti.subject_to(self._epsilon>=0)
+                for jj,constraint in enumerate(self._barrierConstraints) :
                     self._opti.subject_to(constraint >=-self._epsilon) # add all the constraints
-                    self._opti.subject_to(self._epsilon>=0)
-                cost += 100*(1+self._epsilon)**2
+                cost += 100*(1+self._epsilon[-1])**2
         else :
             if not len(self._STLformulas)==0 :
                 for constraint in self._barrierConstraints :
@@ -308,8 +313,6 @@ class STLController():
                 cost += 0*self._epsilon
                 
         self._opti.minimize(cost) 
-        #self.self._epsilon = self._opti.variable(1)anOutdatedFormulas(self) :
-        
         self._opti.solver("qpoases",{"printLevel":"none"})
     
     
@@ -374,7 +377,7 @@ class Agent() :
         self._currentState          = initialState
         self._currentNeigboursState = dict() 
         self._deltaT                = 0.002
-        self._alphaMargin  =  10*self._deltaT # 5 for sim1
+        self._alphaMargin  =  5*self._deltaT # 5 for sim1
         
         self._controller   = STLController(agentIndex=self._agentIndex,neigbours=self._neigbours,stateSpaceDim=len(initialState),alphaMarginOnBarrier=self._alphaMargin)
         

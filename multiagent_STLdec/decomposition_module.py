@@ -417,7 +417,7 @@ def computeOverloadingConstraints(edgeObj: GraphEdge) -> list[ca.Function]:
     Given a list of formulas defined on a single edge, it computes the required inclusion constraints due to the conjunction of such formulas along the same edge"""
     
     formulas = edgeObj.formulasList
-    
+    print(len(formulas))
     if len(formulas) == 1 :
         return  [] # with one single formula you don't need overloading constraints
     
@@ -433,7 +433,6 @@ def computeOverloadingConstraints(edgeObj: GraphEdge) -> list[ca.Function]:
             raise NotImplementedError("Seems like there is at least a triple of always formulas that are intersecting in terms of time interval. This can be handled only if all the always operatrs have the same time interval. This is not the case for the formulas you inserted. Possible constrasting inclusion constraints would arise")
         else : # in the case they all have the same time interval divide in parameteric and not parametric and start the inclusion process 
             sameTimeInterval = True # flag so that computation does not have to be redone
-        
             
     # PART 1 : resolve always vs always formulas intersections
     if sameTimeInterval : # all the always formulas have the same time interval
@@ -452,16 +451,16 @@ def computeOverloadingConstraints(edgeObj: GraphEdge) -> list[ca.Function]:
         else : # case in which the always formulas are non intersecting
             parametricFormulas    = [formula for formula in alwaysFormulas if formula.isParametric]
             nonParametricFormulas = [formula for formula in alwaysFormulas if not formula.isParametric]
-            
             if len(nonParametricFormulas)>1 :
                 raise NotImplementedError("Seems like there is one edge that constains two always specifications with same time interval. This is not smart. Indeed two always formulas with same time interval require that the superleevl sets are intersecting. So just rewrite the formula using the interscetion of the two orginal superlevel sets as predicate superlevel set")
             
             else :
                 alwaysFormulas = nonParametricFormulas + parametricFormulas # we reorder the always formulas such that the non parameteric formula is at the beginning. SO the sequence of inclusions is now correct
-                
                 for index in range(len(alwaysFormulas)-1) :
                     parentFormula = alwaysFormulas[index]
+                    print("parent edge:",parentFormula.edgeTuple)
                     childFormula  = alwaysFormulas[index+1]
+                    print("child edge:",childFormula.edgeTuple)
                     constraints  += parentFormula.getConstraintFromInclusionOf(childFormula)
         
         innerMostAlwaysFormula = alwaysFormulas[-1] # the always formula the is the last one to receive an inclusion constraint. All the other formulas include this one
@@ -483,7 +482,6 @@ def computeOverloadingConstraints(edgeObj: GraphEdge) -> list[ca.Function]:
                 intersection:timeInterval = formulaI.timeInterval / formulaJ.timeInterval
                 
                 if not intersection.isEmpty() :
-                    
                     if formulaJ.isParametric and not(formulaI.isParametric) : # parametric vs non-parameteric formula
                         constraints  += formulaI.getConstraintFromInclusionOf(formulaJ)
                         
@@ -493,6 +491,7 @@ def computeOverloadingConstraints(edgeObj: GraphEdge) -> list[ca.Function]:
                     elif formulaI.isParametric and formulaJ.isParametric : # if both parameteric include the one with shortest time into the one with longest time (this is our design choice)
                         
                         if formulaI.timeInterval.measure  >=  formulaJ.timeInterval.measure: # then include the formula J in I
+                            
                             constraints  += formulaI.getConstraintFromInclusionOf(formulaJ)
                         else :
                             constraints  += formulaJ.getConstraintFromInclusionOf(formulaI)
@@ -714,7 +713,7 @@ def pathMinkowskiSumVertices(listOfFormulas : list[STLformula],edgeList: list[(i
       
 
 
-def computeNewTaskGraph(MASgraph:nx.Graph,problemDimension:int,maxDistanceFunction : ca.Function)-> tuple[nx.Graph,nx.Graph,nx.Graph] : 
+def computeNewTaskGraph(MASgraph:nx.Graph,problemDimension:int,maxInterRobotDistance = None)-> tuple[nx.Graph,nx.Graph,nx.Graph] : 
     """ Solves the task decomposition completely"""
     
     numberOfVerticesHypercube = 2**problemDimension
@@ -736,36 +735,36 @@ def computeNewTaskGraph(MASgraph:nx.Graph,problemDimension:int,maxDistanceFuncti
     positiveNuConstraint        : list[ca.MX] = []
 
     decompositionOccurred = False
-    
+    decompositionSolved = []
     for nodei,nodej,attribute in MASgraph.edges(data=True) :
         edgeObject:GraphEdge = attribute["edgeObj"]
-
         if (not edgeObject.isCommunicating) and (edgeObject.hasSpecifications) : # find a path
             decompositionOccurred = True
             
             # retrive all the formulas to be decomposed
             formulasToBeDecomposed: list[STLformula] = MASgraph.edges[nodei,nodej]["edgeObj"].formulasList 
-        
+            
+            
             # path finding and grouping nodes
             path = nx.shortest_path(MASgraph,source=nodei,target=nodej,weight=computeWeights) # path of agents from start to end
             pathsList.append(path) # save sources list for later plotting
-            
             # for each formula to be decomposed we will have n subformulas with n being the length of the path we select.
+
             for formula in formulasToBeDecomposed : # add a new set of formulas for each edge
                 edgeSubformulas : list[STLformula] = [] # list of subformulas associate to one orginal formula. you have as many subformulas as number of edges
                 
                 originalTemporalOperator :str                     = formula.temporalOperator  # get time interval of the orginal operator
                 originalTimeInterval     :timeInterval            = formula.timeInterval      # get time interval of the orginal operator
                 originalPredicate        :convexPredicateFunction = formula.predicate # get the predicate function
-                formulaEdgeTuple                :tuple[int,int] = formula.edgeTuple
+                originalEdgeTuple        :tuple[int,int] = formula.edgeTuple
                 
-                if formulaEdgeTuple == (nodei,nodej) : #case the direction is correct
+                if originalEdgeTuple == (nodei,nodej) : #case the direction is correct
                     edgesThroughPath = edgeSet(path=path) # find edges along the path
                 else :
                     edgesThroughPath =  edgeSet(path=path[::-1]) # we reverse the path. This is to follow the specification direction
-                    
+                
+                
                 for sourceNode,targetNode in  edgesThroughPath :
-                    
                     
                     # create a new parameteric subformula object
                     subformula = STLformula(timeinterval     = originalTimeInterval,
@@ -773,11 +772,9 @@ def computeNewTaskGraph(MASgraph:nx.Graph,problemDimension:int,maxDistanceFuncti
                                             predicate        = convexPredicateFunction(targetNode=targetNode,sourceNode=sourceNode,stateSpaceDimension=problemDimension),
                                             timeOfSatisfaction=formula.timeOfSatisfaction)
                     
-                    
-                    
                     # warm start of the variables involved in the optimization TODO: check if you have a better warm start base on the specification you have. Maybe some more intelligen heuristic
                     globalOptimizer.set_initial(subformula.centerVar , MASgraph.nodes[targetNode]["pos"]-MASgraph.nodes[sourceNode]["pos"]) 
-                    globalOptimizer.set_initial(subformula.nuVar   , np.ones(problemDimension))
+                    globalOptimizer.set_initial(subformula.nuVar   , np.ones(problemDimension)*4)
 
                     # add subformulas to the current path
                     edgeSubformulas.append(subformula)
@@ -788,21 +785,23 @@ def computeNewTaskGraph(MASgraph:nx.Graph,problemDimension:int,maxDistanceFuncti
                     MASgraph.edges[sourceNode,targetNode]["edgeObj"].addFormula(subformula)   # add current subformula to the edge 
 
                     # Set maximum distance constraint for each hypercube vertex
-                    for jj in range(numberOfVerticesHypercube) : 
-                        maxCommunicationConstraints.append(maxDistanceFunction(subformulaVertices[:,jj])<=0)     
-                        
+                    if maxInterRobotDistance != None :
+                        for jj in range(numberOfVerticesHypercube) : 
+                            maxCommunicationConstraints.append(ca.norm_2(subformulaVertices[:,jj])<=maxInterRobotDistance)     
+                   
                 
-                # now set that the final i sum has to stay inside the orginal predicate
+                # now set that the final i sum has to stay inside the original predicate
                 minowkySumVertices  = pathMinkowskiSumVertices( edgeSubformulas ,  edgesThroughPath)  # return the symbolic vertices f the hypercube to define the constraints
                 for jj in range(numberOfVerticesHypercube) :
-                        pathConstraints.append(originalPredicate.function(minowkySumVertices[:,jj])<=0) # for each vertex of the minkowski sum ensure they are inside the original predicate superlevel-set
+                    pathConstraints.append(originalPredicate.function(minowkySumVertices[:,jj])<=0) # for each vertex of the minkowski sum ensure they are inside the original predicate superlevel-set
             
+            decompositionSolved.append((path,edgeSubformulas))    
+
             # mark all the used edges for the optimization
             edgesThroughPath = edgeSet(path=path) # find edges along the path
             # flag the edges applied for the optimization 
             for sourceNode,targetNode in   edgesThroughPath :
                     MASgraph.edges[sourceNode,targetNode]["edgeObj"].flagOptimizationInvolvement()
-            
             
             
     # Now we check the cycle constraints on the graph as a first step and we then check the overloading constraints as a second step
@@ -825,6 +824,7 @@ def computeNewTaskGraph(MASgraph:nx.Graph,problemDimension:int,maxDistanceFuncti
         # one line of overloading constraints
         optimisedEdges = [(i,j,edgeDict["edgeObj"]) for i,j,edgeDict in MASgraph.edges(data=True) if edgeDict["edgeObj"].isInvolvedInOptimization]
         for i,j,edgeObj in optimisedEdges  :
+            print(i,j)
             overloadingConstraints += computeOverloadingConstraints(edgeObj)
         
                 
@@ -861,14 +861,15 @@ def computeNewTaskGraph(MASgraph:nx.Graph,problemDimension:int,maxDistanceFuncti
         print("-----------------------------------------")   
         print(f"Total number of formulas created : {newFormulasCount}")   
         print("---------Found Solution------------------") 
-        for i,j,edgeObject in optimisedEdges :   
-            for formula in edgeObject.formulasList:
-                if formula.isParametric :
-                    print("edge      : (" + str(i)+ "," + str(j) + ")")
-                    print("vector    : "+ str(solution.value(formula.centerVar)))
-                    print("dimension : "+ str(solution.value(formula.nuVar)))
-                    print("formua ID :" + str(id(formula)))
-                    # turn predicates from parameteric to no parameteric
+        for path,formulas in decompositionSolved :   
+            print("path: ",path)
+            for formula in formulas:
+                print("edge      : (" + str(formula.sourceNode)+ "," + str(formula.targetNode) + ")")
+                print("vector    : "+ str(solution.value(formula.centerVar)))
+                print("dimension : "+ str(solution.value(formula.nuVar)))
+                print("formua ID : " + str(id(formula)))
+                print("Operator  : "+ formula.temporalOperator)
+                # turn predicates from parameteric to no parameteric
                 
                 
     return initialTaskGraph,TaskGraph,commGraph 

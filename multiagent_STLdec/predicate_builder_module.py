@@ -207,7 +207,7 @@ class convexPredicateFunction() :
             
             # if the direction of request matches the direction of the parametric predicate the use the normal center
             elif self.edgeTuple == (source,target) :
-                # the requested direction is the orginal direction of the predicate
+               # the requested direction is the orginal direction of the predicate
                parametericHypercubeVertices =    self._centerVar + hypercubeVertices*self._nuVar/2    # Each column of the matrix represents one of the vertices
             
             else : # use the opposite direction center
@@ -568,15 +568,14 @@ class STLformula( ) :
                 constraints +=[ A@vertices[:,jj]-b<=np.zeros((self._stateSpaceDimension*2,1))]
                 
         elif  formula.isParametric and (not self.isParametric) :
-            
             source,target = self.edgeTuple # check the direction of definition
             
             if (formula.edgeTuple != self.edgeTuple) and (formula.edgeTuple != (target,source)) : # this happens if the edge is not the same at all
                 raise NotImplementedError("It seems that you are trying to make an inclusion between two formulas that are not part of the same edge. This is not support for now")
-            elif formula.edgeTuple != self.edgeTuple :
-                self.flip() # change to flipped version to match the direction of the parametric formulas
-            vertices   = formula.getHypercubeVertices(sourceNode=source,targetNode=target)
+            
+            vertices    = formula.getHypercubeVertices(sourceNode=source,targetNode=target)
             constraints = []
+            
             if self._predicate._isApproximated : # in this case the predicate was approximated so you can do all of this with linear hyperplanes 
                 A,b = self.computeLinearHypercubeRepresentation(sourceNode=source,targetNode=target)
                 for jj in range(numVertices) : # number of vertices of hypercube is computable given the stateSpaceDimension of the problem
