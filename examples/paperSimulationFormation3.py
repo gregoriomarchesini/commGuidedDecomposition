@@ -166,7 +166,6 @@ formula.predicate.addSourceTarget(source=1,target=1)
 MASgraph.edges[1,1]["edgeObj"].addFormula(formula)
 
 
-
 formula   = STLformula(temporalOperator   = "always",
                            predicate      = ellipsoidPredicate(center=np.array([+16,0]),P = np.eye(2)/8),
                            timeinterval   = timeInterval(25.,28.))
