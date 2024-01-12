@@ -35,197 +35,195 @@ problemDimension           = len(v1)           # dimension of the problem in R^n
 
 # create an iterable with index and attributes of the nodes you want to create
 
-nodes =[(1,{"pos":v1}),
-        (2,{"pos":v2}),
-        (3,{"pos":v3}),
-        (4,{"pos":v4}),
-        (5,{"pos":v5}),
-        (6,{"pos":v6}),
-        (7,{"pos":v7}),
-        (8,{"pos":v8}),]
+nodes ={0:v1,
+        1:v2,
+        2:v3,
+        3:v4,
+        4:v5,
+        5:v6,
+        6:v7,
+        7:v8}
 
 
-communicatingEdges = [(1,2),(1,3),(1,5),(1,4),(5,6),(6,4),(6,7),(6,8),(6,6),(2,2),(1,1)]
-nonCommunicatingEdges = [(2,5),(4,3),(7,4),(8,5),(8,2),(7,3),(8,7),(3,2)]
-
-edges = []
-for i,j in communicatingEdges :
-    edges.append((i,j,{"edgeObj":GraphEdge(source=i,target=j,isCommunicating = 1)}))
-for i,j in nonCommunicatingEdges :
-    edges.append((i,j,{"edgeObj":GraphEdge(source=i,target=j,isCommunicating = 0)}))
-
-
-xx = [node[1]["pos"][0] for node in nodes]
-yy = [node[1]["pos"][1] for node in nodes]
-xxmin,xxmax = min(xx)*1.6,max(xx)*1.6
-yymin,yymax = min(yy)*1.6,max(yy)*1.6
-
-# create the whole graph for your system with task and communication edges
-MASgraph = Graph()
-MASgraph.add_nodes_from(nodes)
-MASgraph.add_edges_from(edges)
-
-
-#########################################################################################################
-# Predicate construction
-#########################################################################################################
-
-# formation task
-formula   = STLformula(temporalOperator   = "always",
-                           predicate      = ellipsoidPredicate(center=np.array([-15,15]),P = np.eye(2)/9),
-                           timeinterval   = timeInterval(10.,15.))
-formula.predicate.addSourceTarget(source=5,target=8) # if you don't specify it , it will take the source,target from the edge
-MASgraph.edges[8,5]["edgeObj"].addFormula(formula)
-
-formula   = STLformula(temporalOperator   = "always",
-                           predicate      = ellipsoidPredicate(center=np.array([-15,-15]),P = np.eye(2)/9),
-                           timeinterval   = timeInterval(10.,15.))
-formula.predicate.addSourceTarget(source=5,target=2)
-MASgraph.edges[2,5]["edgeObj"].addFormula(formula)
-
-formula   = STLformula(temporalOperator   = "always",
-                           predicate      = ellipsoidPredicate(center=np.array([15,-15]),P = np.eye(2)/9),
-                           timeinterval   = timeInterval(10.,15.))
-formula.predicate.addSourceTarget(source=4,target=3)
-MASgraph.edges[4,3]["edgeObj"].addFormula(formula)
-
-formula   = STLformula(temporalOperator   = "always",
-                           predicate      = ellipsoidPredicate(center=np.array([15,15]),P = np.eye(2)/9),
-                           timeinterval   = timeInterval(10.,15.))
-formula.predicate.addSourceTarget(source=4,target=7)
-MASgraph.edges[4,7]["edgeObj"].addFormula(formula)
-
-
-
-formula   = STLformula(temporalOperator   = "always",
-                           predicate      = ellipsoidPredicate(center=np.array([10,-10]),P = np.eye(2)/4),
-                           timeinterval   = timeInterval(10.,15.))
-formula.predicate.addSourceTarget(source=6,target=4)
-MASgraph.edges[6,4]["edgeObj"].addFormula(formula)
-
-
-
-formula   = STLformula(temporalOperator   = "always",
-                           predicate      = ellipsoidPredicate(center=np.array([-10,-10]),P = np.eye(2)/4),
-                           timeinterval   = timeInterval(10.,15.))
-formula.predicate.addSourceTarget(source=6,target=5)
-MASgraph.edges[6,5]["edgeObj"].addFormula(formula)
-
-# Single agent task for 6
-
-formula   = STLformula(temporalOperator   = "eventually",
-                           predicate      = polytopicSetPredicate(center=np.array([0,0]),a_list=[np.array([0,-1])],distances=[0],computeApprox=False),
-                           timeinterval   = timeInterval(10.,15.),
-                           timeOfSatisfaction = 15)
-formula.predicate.addSourceTarget(source=6,target=6)
-MASgraph.edges[6,6]["edgeObj"].addFormula(formula)
-
-
-
-formula   = STLformula(temporalOperator   = "eventually",
-                           predicate      = polytopicSetPredicate(center=np.array([0,0]),a_list=[np.array([0,-1])],distances=[0],computeApprox=False),
-                           timeinterval   = timeInterval(10.,15.),
-                           timeOfSatisfaction = 15)
-formula.predicate.addSourceTarget(source=6,target=6)
-MASgraph.edges[6,6]["edgeObj"].addFormula(formula)
-
-
-
-# Separation Task
-
-
-
-formula   = STLformula(temporalOperator   = "eventually",
-                           predicate      = polytopicSetPredicate(center=np.array([5,0]),a_list=[np.array([-1,0])],distances=[0],computeApprox=False),
-                           timeinterval   = timeInterval(25.,28.),
-                           timeOfSatisfaction=27)
-formula.predicate.addSourceTarget(source=6,target=6)
-MASgraph.edges[6,6]["edgeObj"].addFormula(formula)
-
-
-formula   = STLformula(temporalOperator   = "eventually",
-                           predicate      = polytopicSetPredicate(center=np.array([5,0]),a_list=[np.array([-1,0])],distances=[0],computeApprox=False),
-                           timeinterval   = timeInterval(25.,28.),
-                           timeOfSatisfaction = 26)
-formula.predicate.addSourceTarget(source=1,target=1)
-MASgraph.edges[1,1]["edgeObj"].addFormula(formula)
-
-formula   = STLformula(temporalOperator   = "eventually",
-                           predicate      = polytopicSetPredicate(center=np.array([0,5]),a_list=[np.array([0,-1])],distances=[0],computeApprox=False),
-                           timeinterval   = timeInterval(25.,28.),
-                           timeOfSatisfaction=27)
-formula.predicate.addSourceTarget(source=6,target=6)
-MASgraph.edges[6,6]["edgeObj"].addFormula(formula)
-
-
-formula   = STLformula(temporalOperator   = "eventually",
-                           predicate      = polytopicSetPredicate(center=np.array([0,-5]),a_list=[np.array([0,1])],distances=[0],computeApprox=False),
-                           timeinterval   = timeInterval(25.,28.),
-                           timeOfSatisfaction = 26)
-formula.predicate.addSourceTarget(source=1,target=1)
-MASgraph.edges[1,1]["edgeObj"].addFormula(formula)
-
-
-formula   = STLformula(temporalOperator   = "always",
-                           predicate      = ellipsoidPredicate(center=np.array([+16,0]),P = np.eye(2)/8),
-                           timeinterval   = timeInterval(25.,28.))
-formula.predicate.addSourceTarget(source=2,target=3)
-MASgraph.edges[2,3]["edgeObj"].addFormula(formula)
-
-
-formula   = STLformula(temporalOperator   = "always",
-                           predicate      = ellipsoidPredicate(center=np.array([+16,0]),P = np.eye(2)/8),
-                           timeinterval   = timeInterval(25.,28.))
-formula.predicate.addSourceTarget(source=8,target=7)
-MASgraph.edges[7,8]["edgeObj"].addFormula(formula)
-
-
-
-formula   = STLformula(temporalOperator   = "always",
-                           predicate      = ellipsoidPredicate(center=np.array([-8,-8]),P = np.eye(2)/8),
-                           timeinterval   = timeInterval(25.,28.))
-formula.predicate.addSourceTarget(source=1,target=2)
-MASgraph.edges[1,2]["edgeObj"].addFormula(formula)
-
-formula   = STLformula(temporalOperator   = "always",
-                           predicate      = ellipsoidPredicate(center=np.array([-8,8]),P = np.eye(2)/8),
-                           timeinterval   = timeInterval(25.,28.))
-formula.predicate.addSourceTarget(source=6,target=8)
-MASgraph.edges[6,8]["edgeObj"].addFormula(formula)
+communicatingEdges = [(0,1),(0,2),(0,4),(0,3),(4,5),(5,3),(5,6),(5,7),(5,5),(1,1),(0,0)]
+getCompleteGraph(n=8,communicatingEdges=communicatingEdges,nodePositions=nodes)
 
 
 
 
 
-initialTaskGraph,finalTaskGraph,commGraph  = computeNewTaskGraph(MASgraph=MASgraph,problemDimension=2,maxInterRobotDistance= maximumInterRobotDistance)
-visualizeGraphs(commGraph, initialTaskGraph, finalTaskGraph)
-sys.stdout = orig_stdout
-f.close()
+
+# xx = [node[0]["pos"][0] for node in nodes]
+# yy = [node[0]["pos"][1] for node in nodes]
+# xxmin,xxmax = min(xx)*1.6,max(xx)*1.6
+# yymin,yymax = min(yy)*1.6,max(yy)*1.6
+
+# # create the whole graph for your system with task and communication edges
+# MASgraph = Graph()
+# MASgraph.add_nodes_from(nodes)
+# MASgraph.add_edges_from(edges)
 
 
-initialAgentsState ={ 1:np.array([0,0]),
-                      2:np.array([-10,11]),
-                      3:np.array([-25,-30]),
-                      4:np.array([0,20]),
-                      5:np.array([-15,15]),
-                      6:np.array([15,-30]),
-                      7:np.array([-30,-15]),
-                      8:np.array([11,0])}
+# #########################################################################################################
+# # Predicate construction
+# #########################################################################################################
 
-stateTrajectories = simulateAgents(finalTaskGraph,tEnd=28,tStart=0,initialAgentsState=initialAgentsState,cleaningTimes=[15.4])
+# # formation task
+# formula   = STLformula(temporalOperator   = "always",
+#                            predicate      = ellipsoidPredicate(center=np.array([-15,15]),P = np.eye(2)/9),
+#                            timeinterval   = timeInterval(10.,15.))
+# formula.predicate.addSourceTarget(source=4,target=7) # if you don't specify it , it will take the source,target from the edge
+# MASgraph.edges[7,4]["edgeObj"].addFormula(formula)
+
+# formula   = STLformula(temporalOperator   = "always",
+#                            predicate      = ellipsoidPredicate(center=np.array([-15,-15]),P = np.eye(2)/9),
+#                            timeinterval   = timeInterval(10.,15.))
+# formula.predicate.addSourceTarget(source=4,target=1)
+# MASgraph.edges[1,4]["edgeObj"].addFormula(formula)
+
+# formula   = STLformula(temporalOperator   = "always",
+#                            predicate      = ellipsoidPredicate(center=np.array([15,-15]),P = np.eye(2)/9),
+#                            timeinterval   = timeInterval(10.,15.))
+# formula.predicate.addSourceTarget(source=3,target=2)
+# MASgraph.edges[3,2]["edgeObj"].addFormula(formula)
+
+# formula   = STLformula(temporalOperator   = "always",
+#                            predicate      = ellipsoidPredicate(center=np.array([15,15]),P = np.eye(2)/9),
+#                            timeinterval   = timeInterval(10.,15.))
+# formula.predicate.addSourceTarget(source=3,target=6)
+# MASgraph.edges[3,6]["edgeObj"].addFormula(formula)
 
 
-try:
-    os.mkdir("./simulation3")
-except OSError as error:
-    print(error) 
 
-for agentIndex,trajectory in stateTrajectories.items() :       
-        with open(f"simulation3/agent{agentIndex}.npy", 'wb') as f:
-                np.save(f,trajectory)
+# formula   = STLformula(temporalOperator   = "always",
+#                            predicate      = ellipsoidPredicate(center=np.array([10,-10]),P = np.eye(2)/4),
+#                            timeinterval   = timeInterval(10.,15.))
+# formula.predicate.addSourceTarget(source=5,target=3)
+# MASgraph.edges[5,3]["edgeObj"].addFormula(formula)
+
+
+
+# formula   = STLformula(temporalOperator   = "always",
+#                            predicate      = ellipsoidPredicate(center=np.array([-10,-10]),P = np.eye(2)/4),
+#                            timeinterval   = timeInterval(10.,15.))
+# formula.predicate.addSourceTarget(source=5,target=4)
+# MASgraph.edges[5,4]["edgeObj"].addFormula(formula)
+
+# # Single agent task for 5
+
+# formula   = STLformula(temporalOperator   = "eventually",
+#                            predicate      = polytopicSetPredicate(center=np.array([0,0]),a_list=[np.array([0,-1])],distances=[0],computeApprox=False),
+#                            timeinterval   = timeInterval(10.,15.),
+#                            timeOfSatisfaction = 15)
+# formula.predicate.addSourceTarget(source=5,target=5)
+# MASgraph.edges[5,5]["edgeObj"].addFormula(formula)
+
+
+
+# formula   = STLformula(temporalOperator   = "eventually",
+#                            predicate      = polytopicSetPredicate(center=np.array([0,0]),a_list=[np.array([0,-1])],distances=[0],computeApprox=False),
+#                            timeinterval   = timeInterval(10.,15.),
+#                            timeOfSatisfaction = 15)
+# formula.predicate.addSourceTarget(source=5,target=5)
+# MASgraph.edges[5,5]["edgeObj"].addFormula(formula)
+
+
+
+# # Separation Task
+
+
+
+# formula   = STLformula(temporalOperator   = "eventually",
+#                            predicate      = polytopicSetPredicate(center=np.array([5,0]),a_list=[np.array([-1,0])],distances=[0],computeApprox=False),
+#                            timeinterval   = timeInterval(25.,28.),
+#                            timeOfSatisfaction=27)
+# formula.predicate.addSourceTarget(source=5,target=5)
+# MASgraph.edges[5,5]["edgeObj"].addFormula(formula)
+
+
+# formula   = STLformula(temporalOperator   = "eventually",
+#                            predicate      = polytopicSetPredicate(center=np.array([5,0]),a_list=[np.array([-1,0])],distances=[0],computeApprox=False),
+#                            timeinterval   = timeInterval(25.,28.),
+#                            timeOfSatisfaction = 26)
+# formula.predicate.addSourceTarget(source=0,target=0)
+# MASgraph.edges[0,0]["edgeObj"].addFormula(formula)
+
+# formula   = STLformula(temporalOperator   = "eventually",
+#                            predicate      = polytopicSetPredicate(center=np.array([0,5]),a_list=[np.array([0,-1])],distances=[0],computeApprox=False),
+#                            timeinterval   = timeInterval(25.,28.),
+#                            timeOfSatisfaction=27)
+# formula.predicate.addSourceTarget(source=5,target=5)
+# MASgraph.edges[5,5]["edgeObj"].addFormula(formula)
+
+
+# formula   = STLformula(temporalOperator   = "eventually",
+#                            predicate      = polytopicSetPredicate(center=np.array([0,-5]),a_list=[np.array([0,1])],distances=[0],computeApprox=False),
+#                            timeinterval   = timeInterval(25.,28.),
+#                            timeOfSatisfaction = 26)
+# formula.predicate.addSourceTarget(source=0,target=0)
+# MASgraph.edges[0,0]["edgeObj"].addFormula(formula)
+
+
+# formula   = STLformula(temporalOperator   = "always",
+#                            predicate      = ellipsoidPredicate(center=np.array([+16,0]),P = np.eye(2)/8),
+#                            timeinterval   = timeInterval(25.,28.))
+# formula.predicate.addSourceTarget(source=1,target=2)
+# MASgraph.edges[1,2]["edgeObj"].addFormula(formula)
+
+
+# formula   = STLformula(temporalOperator   = "always",
+#                            predicate      = ellipsoidPredicate(center=np.array([+16,0]),P = np.eye(2)/8),
+#                            timeinterval   = timeInterval(25.,28.))
+# formula.predicate.addSourceTarget(source=7,target=6)
+# MASgraph.edges[6,7]["edgeObj"].addFormula(formula)
+
+
+
+# formula   = STLformula(temporalOperator   = "always",
+#                            predicate      = ellipsoidPredicate(center=np.array([-8,-8]),P = np.eye(2)/8),
+#                            timeinterval   = timeInterval(25.,28.))
+# formula.predicate.addSourceTarget(source=0,target=1)
+# MASgraph.edges[0,1]["edgeObj"].addFormula(formula)
+
+# formula   = STLformula(temporalOperator   = "always",
+#                            predicate      = ellipsoidPredicate(center=np.array([-8,8]),P = np.eye(2)/8),
+#                            timeinterval   = timeInterval(25.,28.))
+# formula.predicate.addSourceTarget(source=5,target=7)
+# MASgraph.edges[5,7]["edgeObj"].addFormula(formula)
+
+
+
+
+
+# initialTaskGraph,finalTaskGraph,commGraph  = computeNewTaskGraph(MASgraph=MASgraph,problemDimension=2,maxInterRobotDistance= maximumInterRobotDistance)
+# visualizeGraphs(commGraph, initialTaskGraph, finalTaskGraph)
+# sys.stdout = orig_stdout
+# f.close()
+
+
+# initialAgentsState ={ 0:np.array([0,0]),
+#                       1:np.array([-10,11]),
+#                       2:np.array([-25,-30]),
+#                       3:np.array([0,20]),
+#                       4:np.array([-15,15]),
+#                       5:np.array([15,-30]),
+#                       6:np.array([-30,-15]),
+#                       7:np.array([11,0])}
+
+# stateTrajectories = simulateAgents(finalTaskGraph,tEnd=28,tStart=0,initialAgentsState=initialAgentsState,cleaningTimes=[15.4])
+
+
+# try:
+#     os.mkdir("./simulation3")
+# except OSError as error:
+#     print(error) 
+
+# for agentIndex,trajectory in stateTrajectories.items() :       
+#         with open(f"simulation3/agent{agentIndex}.npy", 'wb') as f:
+#                 np.save(f,trajectory)
 
         
-plt.show()
+# plt.show()
 
     
     

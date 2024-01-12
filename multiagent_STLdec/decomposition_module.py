@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 
 # TODO:set computation of optimal under approximation only if the fomula is called inside the cycle closure. Otherwise don't set it so you save some computational power
 
+
+
+
 class timeInterval() :
     """time interval class"""
     # empty set is represented by a double a=None b = None
@@ -301,6 +304,8 @@ class GraphEdge( ) :
     def flagOptimizationInvolvement(self) -> None :
         self._isInvolvedInOptimization = 1
         
+
+
 
 ########################################################################################################################### 
 # FORMULAS CHECKERS
@@ -951,6 +956,47 @@ def visualizeGraphs(communicationGraph:nx.Graph, initialTaskGraph:nx.Graph, fina
     ax[2].set_title("Initial Task Graph")
     ax[2].set_xlim([xxmin,xxmax])
     ax[2].set_ylim([yymin,yymax])
+
+
+
+def getCompleteGraph(n:int,nodePositions : dict[int,np.ndarray],communicatingEdges : list[(int,int)]) -> nx.Graph :
+    """_summary_
+
+    Args:
+        n (int): number of nodes
+
+    Returns:
+        nx.Graph: complete graph with self loops
+    """    
+    
+    
+
+    G : nx.Graph  = nx.complete_graph(n=n)
+    for node in G.nodes :
+        G.add_edge(node,node) # adding self loops
+    
+    # some checks
+    if len(nodePositions)!= n :
+        raise ValueError("input nodePositions must have as many elemenets as the number of nodes")
+    
+    for index,pos in nodePositions.items() :
+        if not index in G :
+            raise ValueError(f"one or more nodes in the dictionary nodePositions do not match the number of nodes in the graph. The graph has {n} nodes. so indeces must be from 0 to {n-1}")
+    for edge in communicatingEdges :
+        if edge not in G.edges :
+             raise ValueError(f"one or more edges in the the list of communicating edges is not given inside the graph. Namely edge {edge} cannot be specificed given that the graph only has nodes from 0 to {n-1}")
+    
+    
+    
+    for edge in G.edges :
+        if edge in communicatingEdges :
+            G.edges[edge[0],edge[1]].update({"edgeObj":GraphEdge(source=edge[0],target=edge[1],isCommunicating = 1)})        
+        else :
+            G.edges[edge[0],edge[1]].update({"edgeObj":GraphEdge(source=edge[0],target=edge[1],isCommunicating = 0)})        
+            
+    for node,pos in nodePositions.items() :
+        G.nodes[node].update({"pos":pos})
+
 
 
 
