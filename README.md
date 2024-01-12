@@ -1,4 +1,3 @@
-<div align="center">
 
 Certainly, here's the README file content in Markdown:
 
@@ -34,8 +33,8 @@ To get started with using this repository, follow these steps:
 
 1. Clone the repository to your local machine:
    ```bash
-   git clone https://github.com/yourusername/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com//gregoriomarchesini/commGuidedDecomposition.git
+   cd commGuidedDecomposition
    ```
 
 2. Install the required dependencies:
@@ -52,6 +51,3 @@ For detailed usage instructions and examples for each module, please refer to th
 We hope this repository helps you with your Signal Temporal Logic decomposition tasks in multi-agent systems. If you encounter any issues or have suggestions for improvements, please feel free to open an issue or contribute to the project.
 
 Happy coding! 🚀
-
-
-Remember to replace `yourusername` and `your-repo-name` in the badge and installation steps with your actual GitHub username and repository name when you create the actual README file.
