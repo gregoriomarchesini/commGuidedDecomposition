@@ -1,9 +1,8 @@
 
-Certainly, here's the README file content in Markdown:
+# Signal Temporal Logic Task Decomposition for Multi-Agent Systems::🤖
 
-# 🕰️ Signal Temporal Logic Decomposition for Multi-Agent Systems 🕰️
-
-[![GitHub stars](https://img.shields.io/github/stars//gregoriomarchesini/commGuidedDecomposition.svg)](https://github.com/gregoriomarchesini/commGuidedDecomposition/stargazers)
+![Static Badge](https://img.shields.io/badge/KTH-DCS-green?logo=gitlab?style=plastic)
+![Static Badge](https://img.shields.io/badge/love-STL-green?style=plastic)
 
 Welcome to the Signal Temporal Logic Decomposition repository! This project provides an implementation for decomposing Signal Temporal Logic (STL) specifications among agents in a multi-agent system. The system is characterized by a task description and a communication graph, each with distinct topological features. This README will guide you through understanding and using the codebase effectively.
 
