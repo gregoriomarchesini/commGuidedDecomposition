@@ -2,10 +2,9 @@
 
 Certainly, here's the README file content in Markdown:
 
-```markdown
 # 🕰️ Signal Temporal Logic Decomposition for Multi-Agent Systems 🕰️
 
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/your-repo-name.svg)](https://github.com/yourusername/your-repo-name/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars//gregoriomarchesini/commGuidedDecomposition.svg)](https://github.com/gregoriomarchesini/commGuidedDecomposition/stargazers)
 
 Welcome to the Signal Temporal Logic Decomposition repository! This project provides an implementation for decomposing Signal Temporal Logic (STL) specifications among agents in a multi-agent system. The system is characterized by a task description and a communication graph, each with distinct topological features. This README will guide you through understanding and using the codebase effectively.
 
@@ -53,6 +52,6 @@ For detailed usage instructions and examples for each module, please refer to th
 We hope this repository helps you with your Signal Temporal Logic decomposition tasks in multi-agent systems. If you encounter any issues or have suggestions for improvements, please feel free to open an issue or contribute to the project.
 
 Happy coding! 🚀
-```
+
 
 Remember to replace `yourusername` and `your-repo-name` in the badge and installation steps with your actual GitHub username and repository name when you create the actual README file.
