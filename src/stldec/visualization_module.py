@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from multiagent_STLdec.control_module import Agent
+from .control_module import Agent
 import numpy as np
 from tqdm import tqdm
 from networkx import Graph

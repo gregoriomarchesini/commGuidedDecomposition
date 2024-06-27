@@ -1,4 +1,5 @@
-{
+{ 
+    // This is used for debugging and intellisense
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
@@ -10,7 +11,7 @@
             "request": "launch",
             "module": "examples.paperSimulationFormation2",
             "justMyCode": true,
-            "env": {"PYTHONPATH": "${workspaceFolder}/multiagent_STLdec/"}
+            "env": {"PYTHONPATH": "${workspaceFolder}/src"}
         }
     ]
 }

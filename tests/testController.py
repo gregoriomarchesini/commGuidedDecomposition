@@ -1,6 +1,6 @@
 # test the controller 
-from multiagent_STLdec.control_module import STLController,Agent
-from multiagent_STLdec.predicate_builder_module import *
+from stldec.control_module import STLController,Agent
+from stldec.predicate_builder_module import *
 import matplotlib.pylab as plt
 
 

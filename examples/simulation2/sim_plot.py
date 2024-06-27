@@ -1,15 +1,25 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
+
+# Setup directory structure.
+current_dir = os.path.dirname(os.path.abspath(__file__))
+results_dir = "results"
 
 agentId = [1,2,3,4]
 
 agentsTrajectory = dict()
 for id in agentId :
-    with open(f"./agent{id}.npy", 'rb') as f:
-        agentsTrajectory[id] = np.load(f)
+    
+    data_file = os.path.join(current_dir, results_dir, f"agent{id}.npy")
+    try :
+        with open( data_file , 'rb') as f:
+            agentsTrajectory[id] = np.load(f)
+    except :
+        raise Exception("You need to run the simulation before plotting")
 
-
+# Unpack data and start plotting.
 rows,cols = np.shape(agentsTrajectory[1])
 time = agentsTrajectory[1][:,2]
 

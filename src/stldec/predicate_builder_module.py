@@ -2,8 +2,6 @@ import numpy as np
 from   matplotlib.patches import Ellipse
 import casadi as ca
 import itertools
-from typing import Self
-
 
 globalOptimizer = ca.Opti() # the global optimizer for the problem
 
@@ -332,8 +330,8 @@ class timeInterval() :
         else :
             return False
     
-    def __lt__(self,timeInt:Self) -> Self:
-        """strict subset relations self included in timeInt ::: Self < timeInt """
+    def __lt__(self,timeInt:"timeInterval") -> "timeInterval":
+        """strict subset relations self included in timeInt ::: "timeInterval" < timeInt """
         a1,b1 = timeInt.a,timeInt.b
         a2,b2 = self._a,self._b
         
@@ -349,7 +347,7 @@ class timeInterval() :
             else :
                 return False
     
-    def __eq__(self,timeInt:Self) -> bool:
+    def __eq__(self,timeInt:"timeInterval") -> bool:
         """ equality check """
         a1,b1 = timeInt.a,timeInt.b
         a2,b2 = self._a,self._b
@@ -359,7 +357,7 @@ class timeInterval() :
         else :
             return False
         
-    def __ne__(self,timeInt:Self) -> bool :
+    def __ne__(self,timeInt:"timeInterval") -> bool :
         """ inequality check """
         a1,b1 = timeInt.a,timeInt.b
         a2,b2 = self._a,self._b
@@ -369,8 +367,8 @@ class timeInterval() :
         else :
             return True
         
-    def __le__(self,timeInt:Self) -> Self :
-        """subset relations self included in timeInt  ::: Self < timeInt """
+    def __le__(self,timeInt:"timeInterval") -> "timeInterval" :
+        """subset relations self included in timeInt  ::: "timeInterval" < timeInt """
         
         a1,b1 = timeInt.a,timeInt.b
         a2,b2 = self._a,self._b
@@ -387,7 +385,7 @@ class timeInterval() :
             else :
                 return False
         
-    def __truediv__(self,timeInt:Self) -> Self :
+    def __truediv__(self,timeInt:"timeInterval") -> "timeInterval" :
         """interval Intersection"""
         
         a1,b1 = timeInt.a,timeInt.b
@@ -547,7 +545,7 @@ class STLformula( ) :
         A,b = self._predicate.linearRepresentationHypercube(source=sourceNode,target=targetNode)
         return A,b
 
-    def getConstraintFromInclusionOf(self,formula : Self) -> list[ca.MX]:
+    def getConstraintFromInclusionOf(self,formula : "timeInterval") -> list[ca.MX]:
         """ returns inclusion constraints for "formula" inside the of the self formula instance """
         if not isinstance(formula,STLformula) :
             raise ValueError("input formula must be an instance of STL formula")

@@ -3,4 +3,7 @@
 *.npy
 *.pdf
 *.svg
+# venv and vscode
+.venv/
+.vscode/
 

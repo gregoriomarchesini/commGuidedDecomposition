@@ -1,18 +1,22 @@
 import numpy as np
 import sys,os
 from  networkx import Graph
-from   multiagent_STLdec.decomposition_module import *
-from  multiagent_STLdec.predicate_builder_module import *
-from multiagent_STLdec.control_module import *
-from multiagent_STLdec.visualization_module import simulateAgents
+from   stldec.decomposition_module import *
+from   stldec.predicate_builder_module import *
+from   stldec.control_module import *
+from   stldec.visualization_module import simulateAgents
 
+
+# Set folder directory.
+results_dir = "/results"
+results_dir =os.path.dirname(os.path.abspath(__file__)) + results_dir 
+os.makedirs(results_dir, exist_ok=True)
 
 orig_stdout = sys.stdout
-f = open('simulation3_decompositon.txt', 'w')
+f = open(results_dir+"/analysis.txt", 'w')
 sys.stdout = f
 
-# define optimization problem 
-
+# Define optimization problem 
 #########################################################################################################
 # Graph creation
 #########################################################################################################

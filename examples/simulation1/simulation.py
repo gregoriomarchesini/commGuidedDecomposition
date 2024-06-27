@@ -1,14 +1,20 @@
 import numpy as np
 import sys,os
 from  networkx import Graph
-from   multiagent_STLdec.decomposition_module import *
-from  multiagent_STLdec.predicate_builder_module import *
-from multiagent_STLdec.control_module import *
-from multiagent_STLdec.visualization_module import simulateAgents
+from  stldec.decomposition_module import *
+from  stldec.predicate_builder_module import *
+from  stldec.control_module import *
+from  stldec.visualization_module import simulateAgents
 
+
+
+# Set folder directory
+results_dir = "/results"
+results_dir =os.path.dirname(os.path.abspath(__file__)) + results_dir 
+os.makedirs(results_dir, exist_ok=True)
 
 orig_stdout = sys.stdout
-f = open('simulation1_decompositon.txt', 'w')
+f = open(results_dir+"/analysis.txt", 'w')
 sys.stdout = f
 
 # define optimization problem 
@@ -122,13 +128,8 @@ initialAgentsState ={ 1:np.array([0,0]),
 stateTrajectories = simulateAgents(finalTaskGraph,tEnd=32,tStart=0,initialAgentsState=initialAgentsState,cleaningTimes=[25])
 
 
-try:
-    os.mkdir("./simulation1")
-except OSError as error:
-    print(error) 
-
 for agentIndex,trajectory in stateTrajectories.items() :       
-        with open(f"simulation1/agent{agentIndex}.npy", 'wb') as f:
+        with open(results_dir + f"/agent{agentIndex}.npy", 'wb') as f:
                 np.save(f,trajectory)
 
         
