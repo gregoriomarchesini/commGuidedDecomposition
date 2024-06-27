@@ -1,5 +1,0 @@
-{
-    // This is the file that is read when you launch the scripts in the terminal
-    "python.analysis.extraPaths": ["${workspaceFolder}"],
-    "terminal.integrated.env.linux": {"PYTHONPATH": "${workspaceFolder}/src"}
-}
