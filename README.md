@@ -43,10 +43,5 @@ To get started with using this repository, follow these steps:
 
 3. Explore the individual modules and their respective documentation to understand how to use them effectively.
 
-## Getting Started
-
-For detailed usage instructions and examples for each module, please refer to the individual README files in each module's directory.
-
-We hope this repository helps you with your Signal Temporal Logic decomposition tasks in multi-agent systems. If you encounter any issues or have suggestions for improvements, please feel free to open an issue or contribute to the project.
 
 Happy coding! 🚀
